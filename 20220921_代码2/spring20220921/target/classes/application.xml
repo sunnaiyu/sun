@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 开启自动装配注解扫描 -->
+    <context:component-scan base-package="com.jsoft"></context:component-scan>
+
+    <bean id="account" class="com.jsoft.entity.Account" lazy-init="false" init-method="init" destroy-method="destroy">
+        <property name="id" value="1"></property>
+    </bean>
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+        <property name="username" value="root"></property>
+        <property name="password" value="root"></property>
+        <property name="url" value="jdbc:mysql://localhost:3306/ssm?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8"></property>
+    </bean>
+
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- 开启aop的注解扫描 -->
+<!--    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>-->
+
+    <!--AOP配置-->
+    <bean id="myAOP" class="com.jsoft.aop.MyAOP"></bean>
+
+    <aop:config>
+        <aop:aspect ref="myAOP">
+            <!--切点表达式-->
+            <!--
+                execution(* com.jsoft.service.impl.*.*(..))
+                execution：声明接下来的是一个表达式
+                *：访问权限，返回值类型
+                com.jsoft.service.impl：包
+                *：类
+                *：方法名
+                (..)：参数类型
+            -->
+            <!--
+                在expression表达式指定的方法执行之前去执行myAOP中的before方法
+            -->
+            <aop:pointcut id="logAspectPointcut" expression="execution(* com.jsoft.service.impl.*.*(..))"/>
+            <aop:before method="before" pointcut-ref="logAspectPointcut"></aop:before>
+            <aop:after method="after" pointcut-ref="logAspectPointcut"></aop:after>
+            <aop:after-throwing throwing="e" method="throwing" pointcut-ref="logAspectPointcut"></aop:after-throwing>
+            <aop:after-returning returning="result" method="returning" pointcut-ref="logAspectPointcut"></aop:after-returning>
+            <!--around可以把所有的事自己干了-->
+<!--            <aop:around method="around" pointcut-ref="logAspectPointcut"></aop:around>-->
+        </aop:aspect>
+    </aop:config>
+
+</beans>
